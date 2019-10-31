@@ -37,19 +37,6 @@ class Blockchain(object):
 
         self.chain.append(block)
         return block
-
-    def new_transaction(self, sender, recipient, amount):
-        """
-        Creates a new transaction to go into the next mined Block
-        :param sender: <str> Address of the Sender
-        :param recipient: <str> Address of the Recipient
-        :param amount: <int> Amount
-        :return: <int> The index of the BLock that will hold this transaction
-        """
-        # append the sender, recipient and amount to the current transactions
-        self.current_transactions.append({ 'sender': sender, 'recipient': recipient, 'amount': amount })
-        # return the last blocks index + 1
-        return self.last_block['index'] + 1
     
     @staticmethod
     def hash(block):
@@ -134,7 +121,6 @@ def mine():
         previous_hash = blockchain.hash(last_block)
         block = blockchain.new_block(submitted_proof, previous_hash)
 
-        blockchain.new_transaction(sender="0", recipient=node_identifier, amount=1)
 
         response = {
             'message': "New Block Forged",
@@ -172,7 +158,6 @@ def new_transaction():
         response = { 'message': 'Error Missing values' }
         return jsonify(response), 400
 
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
 
     response = { 'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
