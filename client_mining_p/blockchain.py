@@ -121,23 +121,43 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['POST'])
 def mine():
     # We run the proof of work algorithm to get the next proof...
-    proof = blockchain.proof_of_work()
+    # proof = blockchain.proof_of_work()
+    parameters = request.get_json()
 
-    # Forge the new Block by adding it to the chain
-    previous_hash = blockchain.hash(blockchain.last_block)
-    block = blockchain.new_block(proof, previous_hash)
+    required_fields = ['proof', 'id']
 
-    response = {
-        'message': "New Block Forged",
-        'index': block['index'],
-        'transactions': block['transactions'],
-        'proof': block['proof'],
-        'previous_hash': block['previous_hash'],
-    }
-    return jsonify(response), 200
+    if not all(k in parameters for k in required_fields):
+        response = {
+            'message': 'Missing required parameters'
+        }
+        return jsonify(response), 400
+
+    submited_proof = parameters.get('proof')
+
+    last_block = json.dumps(blockchain.last_block, sort_keys=True).encode()
+
+    if blockchain.valid_proof(last_block, submited_proof):
+
+        # Forge the new Block by adding it to the chain
+        previous_hash = blockchain.hash(last_block)
+        block = blockchain.new_block(submited_proof, previous_hash)
+
+        response = {
+            'message': "New Block Forged",
+            'index': block['index'],
+            'transactions': block['transactions'],
+            'proof': block['proof'],
+            'previous_hash': block['previous_hash'],
+        }
+        return jsonify(response), 200
+    else:
+        response = {
+            'message': 'Proof is invalid or already submitted'
+        }
+        return jsonify(response), 400
 
 
 @app.route('/chain', methods=['GET'])
