@@ -37,7 +37,7 @@ class Blockchain(object):
 
         self.chain.append(block)
         return block
-    
+
     @staticmethod
     def hash(block):
         """
@@ -46,7 +46,7 @@ class Blockchain(object):
         "return": <str>
         """
 
-        # Two line version:  
+        # Two line version:
         # block_string = json.dumps(block, sort_keys=True).encode()
         # return hashlib.sha256(block_string).hexdigest()
 
@@ -75,8 +75,6 @@ class Blockchain(object):
     @property
     def last_block(self):
         return self.chain[-1]
-
-    
 
     @staticmethod
     def valid_proof(block_string, proof):
@@ -121,7 +119,6 @@ def mine():
         previous_hash = blockchain.hash(last_block)
         block = blockchain.new_block(submitted_proof, previous_hash)
 
-
         response = {
             'message': "New Block Forged",
             'index': block['index'],
@@ -144,10 +141,12 @@ def full_chain():
     }
     return jsonify(response), 200
 
+
 @app.route('/last_block', methods=['GET'])
 def last_block():
-    response = { 'last_block': blockchain.last_block }
+    response = {'last_block': blockchain.last_block}
     return jsonify(response), 200
+
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
@@ -155,12 +154,12 @@ def new_transaction():
     required_fields = ['sender', 'recipient', 'amount']
 
     if not all(k in values for k in required_fields):
-        response = { 'message': 'Error Missing values' }
+        response = {'message': 'Error Missing values'}
         return jsonify(response), 400
 
-
-    response = { 'message': f'Transaction will be added to Block {index}'}
+    response = {'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
+
 
 # Run the program on port 5000
 if __name__ == '__main__':
