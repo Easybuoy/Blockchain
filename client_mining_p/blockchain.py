@@ -91,6 +91,16 @@ class Blockchain(object):
         guess = f'{block_string}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:6] == "000000"
+    
+    def new_transaction(self, sender, recepient, amount):
+        new_transaction_details = {
+            'sender': sender,
+            'recepient': recepient,
+            'amount': amount
+        }
+
+        self.current_transactions.append(new_transaction_details)
+        return len(self.current_transactions) - 1
 
 
 # Instantiate our Node
@@ -112,12 +122,14 @@ def mine():
         return jsonify(response), 400
 
     submitted_proof = values.get('proof')
+    miner_id = values.get('id')
     last_block = blockchain.last_block
     last_block_string = json.dumps(last_block, sort_keys=True).encode()
 
     if blockchain.valid_proof(last_block_string, submitted_proof):
         previous_hash = blockchain.hash(last_block)
         block = blockchain.new_block(submitted_proof, previous_hash)
+        
 
         response = {
             'message': "New Block Forged",
@@ -152,12 +164,16 @@ def last_block():
 def new_transaction():
     values = request.get_json()
     required_fields = ['sender', 'recipient', 'amount']
+    sender = values.get('sender')
+    recepient = values.get('recepient')
+    amount = values.get('amount')
 
     if not all(k in values for k in required_fields):
         response = {'message': 'Error Missing values'}
         return jsonify(response), 400
-
-    response = {'message': f'Transaction will be added to Block {index}'}
+    
+    new_transaction = blockchain.new_transaction(sender, recepient, amount)
+    response = {'message': f'Transaction will be added to Block {new_transaction}'}
     return jsonify(response), 201
 
 
